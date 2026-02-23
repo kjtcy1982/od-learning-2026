@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OD Learning Guide — 組織開発 学びのガイド</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --teal-600: #0d9488;
+  --teal-500: #14b8a6;
+  --teal-400: #2dd4bf;
+  --teal-100: #ccfbf1;
+  --teal-50: #f0fdfa;
+  --gray-900: #111827;
+  --gray-700: #374151;
+  --gray-600: #4b5563;
+  --gray-500: #6b7280;
+  --gray-400: #9ca3af;
+  --gray-300: #d1d5db;
+  --gray-200: #e5e7eb;
+  --gray-100: #f3f4f6;
+  --gray-50: #f9fafb;
+  --white: #ffffff;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+  --radius: 8px;
+  --radius-lg: 12px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+  background: var(--gray-50);
+  color: var(--gray-700);
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Header */
+header {
+  background: linear-gradient(135deg, var(--teal-600), #0f766e);
+  color: var(--white);
+  padding: 40px 0 32px;
+}
+header h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  letter-spacing: 0.01em;
+}
+header p {
+  font-size: 0.95rem;
+  opacity: 0.9;
+  line-height: 1.7;
+}
+
+/* Filter Section */
+.filter-section {
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-200);
+  padding: 24px 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow-sm);
+}
+
+.filter-toggle {
+  display: none;
+  width: 100%;
+  padding: 10px 16px;
+  background: var(--teal-50);
+  border: 1px solid var(--teal-500);
+  border-radius: var(--radius);
+  color: var(--teal-600);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+
+.search-box {
+  margin-bottom: 16px;
+}
+.search-box input {
+  width: 100%;
+  padding: 10px 16px;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.search-box input:focus {
+  border-color: var(--teal-500);
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.15);
+}
+
+.filter-groups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.filter-group {
+  flex: 0 0 auto;
+}
+.filter-group summary {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+.filter-group summary::-webkit-details-marker { display: none; }
+.filter-group summary::before {
+  content: "▸ ";
+  font-size: 0.7rem;
+}
+.filter-group[open] summary::before {
+  content: "▾ ";
+}
+.filter-group .filter-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 4px;
+}
+
+.filter-btn {
+  display: inline-block;
+  padding: 4px 12px;
+  border: 1px solid var(--gray-300);
+  border-radius: 20px;
+  background: var(--white);
+  color: var(--gray-600);
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  user-select: none;
+}
+.filter-btn:hover {
+  border-color: var(--teal-500);
+  color: var(--teal-600);
+}
+.filter-btn.active {
+  background: var(--teal-600);
+  border-color: var(--teal-600);
+  color: var(--white);
+}
+
+/* Result Count & Controls */
+.result-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0 8px;
+}
+.result-count {
+  font-size: 0.9rem;
+  color: var(--gray-500);
+}
+.result-count strong {
+  color: var(--teal-600);
+  font-weight: 700;
+}
+.clear-btn {
+  font-size: 0.82rem;
+  color: var(--teal-600);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 4px 8px;
+}
+.clear-btn:hover {
+  color: var(--teal-500);
+}
+
+/* Cards */
+.card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 60px;
+}
+
+.card {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+.card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.card-header {
+  padding: 16px 20px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.card-top-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.card-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  line-height: 1.4;
+}
+.card-title-en {
+  font-size: 0.82rem;
+  color: var(--gray-500);
+  font-weight: 400;
+}
+
+.card-chevron {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  color: var(--gray-400);
+  transition: transform 0.2s;
+  margin-top: 4px;
+}
+.card.open .card-chevron {
+  transform: rotate(180deg);
+}
+
+.card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--gray-600);
+}
+.card-meta .provider {
+  font-weight: 500;
+}
+.card-meta .separator {
+  color: var(--gray-300);
+}
+.card-country {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.badge-level-beginner { background: #dbeafe; color: #1d4ed8; }
+.badge-level-intermediate { background: #fef3c7; color: #b45309; }
+.badge-level-advanced { background: #fce7f3; color: #be185d; }
+.badge-format-online { background: #ede9fe; color: #6d28d9; }
+.badge-format-in-person { background: #d1fae5; color: #047857; }
+.badge-format-hybrid { background: #e0e7ff; color: #4338ca; }
+.badge-cost { background: var(--gray-100); color: var(--gray-600); }
+.badge-duration { background: var(--gray-100); color: var(--gray-600); }
+.badge-cert { background: #fef3c7; color: #92400e; }
+
+.card-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.skill-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  background: var(--teal-50);
+  color: var(--teal-600);
+  border-radius: 10px;
+  font-size: 0.75rem;
+}
+
+/* Card Detail (accordion) */
+.card-detail {
+  display: none;
+  padding: 0 20px 20px;
+  border-top: 1px solid var(--gray-100);
+}
+.card.open .card-detail {
+  display: block;
+}
+
+.card-description {
+  font-size: 0.9rem;
+  color: var(--gray-700);
+  line-height: 1.8;
+  margin-bottom: 16px;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.detail-item {
+  font-size: 0.85rem;
+}
+.detail-label {
+  font-weight: 600;
+  color: var(--gray-500);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+}
+.detail-value {
+  color: var(--gray-700);
+}
+
+.detail-themes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+.theme-tag {
+  display: inline-block;
+  padding: 2px 10px;
+  background: var(--gray-100);
+  color: var(--gray-600);
+  border-radius: 10px;
+  font-size: 0.78rem;
+}
+
+.detail-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 20px;
+  background: var(--teal-600);
+  color: var(--white);
+  text-decoration: none;
+  border-radius: var(--radius);
+  font-size: 0.88rem;
+  font-weight: 600;
+  transition: background 0.15s;
+}
+.detail-link:hover {
+  background: var(--teal-500);
+}
+
+.no-results {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--gray-500);
+  font-size: 0.95rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  header { padding: 28px 0 24px; }
+  header h1 { font-size: 1.35rem; }
+  .filter-toggle { display: block; }
+  .filter-area-collapsible { display: none; }
+  .filter-area-collapsible.show { display: block; }
+  .filter-groups { flex-direction: column; gap: 10px; }
+  .card-header { padding: 14px 16px; }
+  .card-detail { padding: 0 16px 16px; }
+  .detail-grid { grid-template-columns: 1fr; }
+  .card-top-row { flex-direction: column; gap: 4px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <h1>OD Learning Guide — 組織開発 学びのガイド</h1>
+    <p>組織開発（OD）の実践を学べるコース・講座・プログラムを、日本・海外から検索できます。<br>「何を学びたいか」「何が身につくか」「どんな内容か」から、自分に合った学びを見つけましょう。</p>
+  </div>
+</header>
+
+<section class="filter-section">
+  <div class="container">
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="フリーワード検索（プログラム名・機関名・スキル・説明文…）">
+    </div>
+    <button class="filter-toggle" id="filterToggle">フィルターを表示 ▾</button>
+    <div class="filter-area-collapsible" id="filterArea">
+      <div class="filter-groups">
+
+        <details class="filter-group" open>
+          <summary>ニーズ（何をしたい？）</summary>
+          <div class="filter-options" data-filter="needs">
+            <span class="filter-btn" data-value="learn-od-basics">OD基礎を学ぶ</span>
+            <span class="filter-btn" data-value="facilitation">ファシリテーション力</span>
+            <span class="filter-btn" data-value="change-management">チェンジマネジメント</span>
+            <span class="filter-btn" data-value="certification">資格取得</span>
+            <span class="filter-btn" data-value="degree">学位取得</span>
+            <span class="filter-btn" data-value="consulting">コンサルティング力</span>
+            <span class="filter-btn" data-value="leadership">リーダーシップ開発</span>
+            <span class="filter-btn" data-value="systems-thinking">システム思考</span>
+          </div>
+        </details>
+
+        <details class="filter-group" open>
+          <summary>テーマ</summary>
+          <div class="filter-options" data-filter="themes">
+            <span class="filter-btn" data-value="od-fundamentals">OD基礎</span>
+            <span class="filter-btn" data-value="process-consultation">プロセスコンサルテーション</span>
+            <span class="filter-btn" data-value="ai-dialogic-od">AI・対話型OD</span>
+            <span class="filter-btn" data-value="action-learning">アクションラーニング</span>
+            <span class="filter-btn" data-value="experiential-learning">体験学習</span>
+            <span class="filter-btn" data-value="systems-thinking">システム思考</span>
+            <span class="filter-btn" data-value="leadership">リーダーシップ</span>
+            <span class="filter-btn" data-value="change-management">チェンジマネジメント</span>
+            <span class="filter-btn" data-value="organizational-design">組織デザイン</span>
+            <span class="filter-btn" data-value="coaching">コーチング</span>
+            <span class="filter-btn" data-value="process-work">プロセスワーク</span>
+          </div>
+        </details>
+
+        <details class="filter-group" open>
+          <summary>国・地域</summary>
+          <div class="filter-options" data-filter="country">
+            <span class="filter-btn" data-value="日本">日本</span>
+            <span class="filter-btn" data-value="アメリカ">アメリカ</span>
+            <span class="filter-btn" data-value="イギリス">イギリス</span>
+            <span class="filter-btn" data-value="オランダ">オランダ</span>
+            <span class="filter-btn" data-value="グローバル">グローバル</span>
+          </div>
+        </details>
+
+        <details class="filter-group" open>
+          <summary>言語</summary>
+          <div class="filter-options" data-filter="language">
+            <span class="filter-btn" data-value="ja">日本語</span>
+            <span class="filter-btn" data-value="en">英語</span>
+          </div>
+        </details>
+
+        <details class="filter-group" open>
+          <summary>形式</summary>
+          <div class="filter-options" data-filter="format">
+            <span class="filter-btn" data-value="in-person">対面</span>
+            <span class="filter-btn" data-value="online">オンライン</span>
+            <span class="filter-btn" data-value="hybrid">ハイブリッド</span>
+          </div>
+        </details>
+
+        <details class="filter-group" open>
+          <summary>レベル</summary>
+          <div class="filter-options" data-filter="level">
+            <span class="filter-btn" data-value="beginner">入門</span>
+            <span class="filter-btn" data-value="intermediate">中級</span>
+            <span class="filter-btn" data-value="advanced">上級</span>
+          </div>
+        </details>
+
+        <details class="filter-group" open>
+          <summary>費用帯</summary>
+          <div class="filter-options" data-filter="costTier">
+            <span class="filter-btn" data-value="low">〜10万円</span>
+            <span class="filter-btn" data-value="middle">10〜50万円</span>
+            <span class="filter-btn" data-value="high">50万円〜</span>
+            <span class="filter-btn" data-value="inquiry">要問合せ</span>
+          </div>
+        </details>
+
+        <details class="filter-group" open>
+          <summary>期間</summary>
+          <div class="filter-options" data-filter="durationCategory">
+            <span class="filter-btn" data-value="short">短期（〜3日）</span>
+            <span class="filter-btn" data-value="medium">中期（1週間〜半年）</span>
+            <span class="filter-btn" data-value="long">長期（半年〜）</span>
+          </div>
+        </details>
+
+        <details class="filter-group" open>
+          <summary>機関タイプ</summary>
+          <div class="filter-options" data-filter="providerType">
+            <span class="filter-btn" data-value="university">大学・大学院</span>
+            <span class="filter-btn" data-value="association">学会・協会</span>
+            <span class="filter-btn" data-value="corporate">民間企業</span>
+          </div>
+        </details>
+
+        <details class="filter-group" open>
+          <summary>認定資格</summary>
+          <div class="filter-options" data-filter="certification">
+            <span class="filter-btn" data-value="true">あり</span>
+            <span class="filter-btn" data-value="false">なし</span>
+          </div>
+        </details>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<main class="container">
+  <div class="result-bar">
+    <div class="result-count" id="resultCount"></div>
+    <button class="clear-btn" id="clearBtn">フィルターをクリア</button>
+  </div>
+  <div class="card-list" id="cardList"></div>
+</main>
+
+<script>
+(function() {
+  'use strict';
+
+  const COUNTRY_FLAGS = {
+    '日本': '🇯🇵', 'アメリカ': '🇺🇸', 'イギリス': '🇬🇧',
+    'オランダ': '🇳🇱', 'グローバル': '🌐'
+  };
+  const LEVEL_LABELS = { beginner: '入門', intermediate: '中級', advanced: '上級' };
+  const FORMAT_LABELS = { 'in-person': '対面', online: 'オンライン', hybrid: 'ハイブリッド' };
+  const THEME_LABELS = {
+    'od-fundamentals': 'OD基礎', 'process-consultation': 'プロセスコンサルテーション',
+    'ai-dialogic-od': 'AI・対話型OD', 'action-learning': 'アクションラーニング',
+    'experiential-learning': '体験学習', 'systems-thinking': 'システム思考',
+    'leadership': 'リーダーシップ', 'change-management': 'チェンジマネジメント',
+    'organizational-design': '組織デザイン', 'coaching': 'コーチング',
+    'process-work': 'プロセスワーク'
+  };
+  const NEEDS_LABELS = {
+    'learn-od-basics': 'OD基礎を学ぶ', 'facilitation': 'ファシリテーション力',
+    'change-management': 'チェンジマネジメント', 'certification': '資格取得',
+    'degree': '学位取得', 'consulting': 'コンサルティング力',
+    'leadership': 'リーダーシップ開発', 'systems-thinking': 'システム思考'
+  };
+  const PROVIDER_TYPE_LABELS = { university: '大学・大学院', association: '学会・協会', corporate: '民間企業' };
+  const COST_TIER_LABELS = { low: '〜10万円', middle: '10〜50万円', high: '50万円〜', inquiry: '要問合せ' };
+  const DURATION_LABELS = { short: '短期', medium: '中期', long: '長期' };
+
+  let courses = [];
+  let activeFilters = {};
+
+  // Init
+  fetch('courses.json')
+    .then(r => r.json())
+    .then(data => {
+      courses = data;
+      render();
+    })
+    .catch(err => {
+      document.getElementById('cardList').innerHTML =
+        '<div class="no-results">データの読み込みに失敗しました。courses.json を確認してください。</div>';
+    });
+
+  // Filter buttons
+  document.querySelectorAll('.filter-options').forEach(group => {
+    group.addEventListener('click', e => {
+      const btn = e.target.closest('.filter-btn');
+      if (!btn) return;
+      const filterKey = group.dataset.filter;
+      const value = btn.dataset.value;
+      if (!activeFilters[filterKey]) activeFilters[filterKey] = new Set();
+      if (activeFilters[filterKey].has(value)) {
+        activeFilters[filterKey].delete(value);
+        btn.classList.remove('active');
+        if (activeFilters[filterKey].size === 0) delete activeFilters[filterKey];
+      } else {
+        activeFilters[filterKey].add(value);
+        btn.classList.add('active');
+      }
+      render();
+    });
+  });
+
+  // Search input
+  const searchInput = document.getElementById('searchInput');
+  let searchTimeout;
+  searchInput.addEventListener('input', () => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(render, 200);
+  });
+
+  // Clear
+  document.getElementById('clearBtn').addEventListener('click', () => {
+    activeFilters = {};
+    searchInput.value = '';
+    document.querySelectorAll('.filter-btn.active').forEach(b => b.classList.remove('active'));
+    render();
+  });
+
+  // Mobile toggle
+  const filterToggle = document.getElementById('filterToggle');
+  const filterArea = document.getElementById('filterArea');
+  filterToggle.addEventListener('click', () => {
+    const show = !filterArea.classList.contains('show');
+    filterArea.classList.toggle('show', show);
+    filterToggle.textContent = show ? 'フィルターを隠す ▴' : 'フィルターを表示 ▾';
+  });
+
+  function matchesCourse(course) {
+    // Check each active filter
+    for (const [key, values] of Object.entries(activeFilters)) {
+      if (values.size === 0) continue;
+
+      if (key === 'needs' || key === 'themes') {
+        // Array fields: course must have at least one matching value
+        if (!course[key].some(v => values.has(v))) return false;
+      } else if (key === 'language') {
+        if (!course.language.some(v => values.has(v))) return false;
+      } else if (key === 'certification') {
+        const courseVal = String(course.certification);
+        if (!values.has(courseVal)) return false;
+      } else {
+        // Scalar fields
+        if (!values.has(course[key])) return false;
+      }
+    }
+
+    // Free text search
+    const query = searchInput.value.trim().toLowerCase();
+    if (query) {
+      const searchable = [
+        course.name, course.nameEn, course.provider, course.description,
+        course.cost, course.duration, course.certificationName,
+        ...course.skills, ...course.themes.map(t => THEME_LABELS[t] || t),
+        ...course.needs.map(n => NEEDS_LABELS[n] || n)
+      ].join(' ').toLowerCase();
+      if (!searchable.includes(query)) return false;
+    }
+
+    return true;
+  }
+
+  function render() {
+    const filtered = courses.filter(matchesCourse);
+    const total = courses.length;
+    const count = filtered.length;
+
+    document.getElementById('resultCount').innerHTML =
+      `<strong>${count}件</strong> / ${total}件中`;
+
+    const cardList = document.getElementById('cardList');
+
+    if (count === 0) {
+      cardList.innerHTML = '<div class="no-results">条件に一致するプログラムが見つかりませんでした。<br>フィルターを変更してお試しください。</div>';
+      return;
+    }
+
+    cardList.innerHTML = filtered.map(c => `
+      <div class="card" data-id="${c.id}">
+        <div class="card-header" onclick="this.parentElement.classList.toggle('open')">
+          <div class="card-top-row">
+            <div>
+              <div class="card-title">${esc(c.name)}
+                <span class="card-title-en">${esc(c.nameEn)}</span>
+              </div>
+            </div>
+            <svg class="card-chevron" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <div class="card-meta">
+            <span class="provider">${esc(c.provider)}</span>
+            <span class="separator">|</span>
+            <span class="card-country">${COUNTRY_FLAGS[c.country] || ''} ${esc(c.country)}</span>
+          </div>
+          <div class="badges">
+            <span class="badge badge-level-${c.level}">${LEVEL_LABELS[c.level]}</span>
+            <span class="badge badge-format-${c.format}">${FORMAT_LABELS[c.format]}</span>
+            <span class="badge badge-duration">${DURATION_LABELS[c.durationCategory]} · ${esc(c.duration)}</span>
+            <span class="badge badge-cost">${COST_TIER_LABELS[c.costTier]}</span>
+            ${c.certification ? '<span class="badge badge-cert">認定資格あり</span>' : ''}
+          </div>
+          <div class="card-skills">
+            ${c.skills.slice(0, 3).map(s => `<span class="skill-tag">${esc(s)}</span>`).join('')}
+          </div>
+        </div>
+        <div class="card-detail">
+          <p class="card-description">${esc(c.description)}</p>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <div class="detail-label">費用</div>
+              <div class="detail-value">${esc(c.cost)}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">期間</div>
+              <div class="detail-value">${esc(c.duration)}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">言語</div>
+              <div class="detail-value">${c.language.map(l => l === 'ja' ? '日本語' : '英語').join(' / ')}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">機関タイプ</div>
+              <div class="detail-value">${PROVIDER_TYPE_LABELS[c.providerType]}</div>
+            </div>
+            ${c.certification ? `
+            <div class="detail-item">
+              <div class="detail-label">認定資格</div>
+              <div class="detail-value">${esc(c.certificationName)}</div>
+            </div>` : ''}
+          </div>
+          <div>
+            <div class="detail-label" style="margin-bottom:6px">テーマ</div>
+            <div class="detail-themes">
+              ${c.themes.map(t => `<span class="theme-tag">${THEME_LABELS[t] || esc(t)}</span>`).join('')}
+            </div>
+          </div>
+          <div style="margin-bottom:16px">
+            <div class="detail-label" style="margin-bottom:6px">ニーズ</div>
+            <div class="detail-themes">
+              ${c.needs.map(n => `<span class="theme-tag">${NEEDS_LABELS[n] || esc(n)}</span>`).join('')}
+            </div>
+          </div>
+          <div style="margin-bottom:16px">
+            <div class="detail-label" style="margin-bottom:6px">身につくスキル</div>
+            <div class="card-skills">
+              ${c.skills.map(s => `<span class="skill-tag">${esc(s)}</span>`).join('')}
+            </div>
+          </div>
+          <a href="${esc(c.url)}" target="_blank" rel="noopener noreferrer" class="detail-link">
+            公式サイトを見る →
+          </a>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function esc(str) {
+    if (!str) return '';
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+})();
+</script>
+
+</body>
+</html>
